@@ -1,50 +1,28 @@
-# Welcome to your Expo app 👋
+# iOS Customer Job Management App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile application for managing customers and jobs.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Dashboard** - Business overview with active jobs and customer statistics
+- **Customer Management** - Browse, search, and view detailed customer information
+- **Real-time Search** - Filter customers as you type
 
-   ```bash
-   npm install
-   ```
+## Screens
 
-2. Start the app
+1. **Dashboard** - Main screen showing business metrics and quick actions
+2. **Customers** - Searchable list of all customers
+3. **Customer Details** - Detailed view of individual customer information
 
-   ```bash
-   npx expo start
-   ```
+## External Packages Used
 
-In the output, you'll find options to open the app in a
+This project utilizes the following Expo packages:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **`expo-blur`** - Creates blur effects on disabled navigation tabs (Jobs and Reports) to indicate features under development
+- **`@expo/vector-icons`** - Provides icons throughout the application including navigation icons, contact icons, and action buttons
+- **`expo-status-bar`** - Controls the appearance of the device status bar
+- **`expo-haptics`** - Provides feedback on user interactions such as button presses and navigation actions
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Screenshots
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+![App Design](design.png)

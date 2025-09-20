@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
-import BottomNavigation from '../../components/BottomNavigation';
+import * as Haptics from 'expo-haptics';
 
 export default function CustomerDetails() {
   const params = useLocalSearchParams();
@@ -16,31 +16,23 @@ export default function CustomerDetails() {
     jobs: params.customerJobs || 0,
   };
 
-  const handleCustomersPress = () => {
-    router.push('/customers');
+  const handleBackPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/(tabs)/customers');
   };
 
-  const handleDashboardPress = () => {
-    router.push('/');
-  };
-
-  const handleJobsPress = () => {
-    console.log('Jobs pressed');
-  };
-
-  const handleReportsPress = () => {
-    console.log('Reports pressed');
-  };
-
-  const handleCallPress = () => {
+  const handleCallPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     console.log('Call customer:', customer.phone);
   };
 
-  const handleEmailPress = () => {
+  const handleEmailPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     console.log('Email customer:', customer.email);
   };
 
-  const handleViewLocationPress = () => {
+  const handleViewLocationPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     console.log('View location');
   };
 
@@ -48,9 +40,9 @@ export default function CustomerDetails() {
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* Navigation Bar */}
+        {/* nav bar */}
         <View style={styles.navbar}>
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
           </Pressable>
           <Text style={styles.navTitle}>Customer Details</Text>
@@ -58,7 +50,7 @@ export default function CustomerDetails() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Customer Header */}
+          {/* custom header */}
           <View style={styles.headerSection}>
             <View style={styles.customerIcon}>
               <Ionicons name="business" size={48} color="#007AFF" />
@@ -67,9 +59,8 @@ export default function CustomerDetails() {
             <Text style={styles.customerType}>Commercial Client</Text>
           </View>
 
-          {/* Contact Information */}
+          {/* contact info */}
           <View style={styles.infoSection}>
-            {/* Email */}
             <Pressable style={styles.infoRow} onPress={handleEmailPress}>
               <View style={styles.infoIcon}>
                 <Ionicons name="mail" size={20} color="#007AFF" />
@@ -80,7 +71,7 @@ export default function CustomerDetails() {
               </View>
             </Pressable>
 
-            {/* Phone */}
+        
             <Pressable style={styles.infoRow} onPress={handleCallPress}>
               <View style={styles.infoIcon}>
                 <Ionicons name="call" size={20} color="#007AFF" />
@@ -91,7 +82,6 @@ export default function CustomerDetails() {
               </View>
             </Pressable>
 
-            {/* Address */}
             <Pressable style={styles.infoRow} onPress={handleViewLocationPress}>
               <View style={styles.infoIcon}>
                 <Ionicons name="location" size={20} color="#007AFF" />
@@ -104,7 +94,7 @@ export default function CustomerDetails() {
               </View>
             </Pressable>
 
-            {/* Contact Person */}
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="person" size={20} color="#007AFF" />
@@ -115,7 +105,7 @@ export default function CustomerDetails() {
               </View>
             </View>
 
-            {/* Active Jobs */}
+          
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="briefcase" size={20} color="#007AFF" />
@@ -127,15 +117,6 @@ export default function CustomerDetails() {
             </View>
           </View>
         </ScrollView>
-
-        {/* Bottom Tab Navigation */}
-        <BottomNavigation
-          activeTab="customers"
-          onDashboardPress={handleDashboardPress}
-          onCustomersPress={handleCustomersPress}
-          onJobsPress={handleJobsPress}
-          onReportsPress={handleReportsPress}
-        />
       </View>
     </>
   );
@@ -156,6 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    height: 70,
   },
   navTitle: {
     fontSize: 18,

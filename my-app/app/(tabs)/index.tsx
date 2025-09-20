@@ -3,40 +3,31 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import WelcomeSection from '../../components/WelcomeSection';
-import BottomNavigation from '../../components/BottomNavigation';
 import DashboardCard from '../../components/DashboardCard';
 
 export default function Dashboard() {
-  const handleCustomersPress = () => {
+  const handleCustomersPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/customers');
   };
 
-  const handleAddCustomerPress = () => {
-    // todo
+  const handleAddCustomerPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     console.log('Add Customer pressed');
   };
 
-  const handleCreateJobPress = () => {
-    //todod
+  const handleCreateJobPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     console.log('Create Job pressed');
-  };
-
-  const handleJobsPress = () => {
-    //todo
-    console.log('Jobs pressed');
-  };
-
-  const handleReportsPress = () => {
-    // todo
-    console.log('Reports pressed');
   };
 
   return (
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* nav bar1 */}
+        {/* nav bar */}
         <View style={styles.navbar}>
           <View />
           <Text style={styles.navTitle}>Dashboard</Text>
@@ -46,9 +37,8 @@ export default function Dashboard() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <WelcomeSection userName="Julia" />
 
-          {/*cards grid*/}
+          {/* grid main cards */}
           <View style={styles.cardsContainer}>
-            {/* stats card*/}
             <View style={styles.cardsRow}>
               <DashboardCard
                 title="Active Jobs"
@@ -61,7 +51,7 @@ export default function Dashboard() {
               />
             </View>
 
-            {/* quick actions */}
+            {/* quick cacitons */}
             <Text style={styles.sectionTitle}>Quick Actions</Text>
             <View style={styles.cardsRow}>
               <DashboardCard
@@ -77,14 +67,6 @@ export default function Dashboard() {
             </View>
           </View>
         </ScrollView>
-
-        {/* bottom nav */}
-        <BottomNavigation
-          activeTab="dashboard"
-          onCustomersPress={handleCustomersPress}
-          onJobsPress={handleJobsPress}
-          onReportsPress={handleReportsPress}
-        />
       </View>
     </>
   );
@@ -105,12 +87,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    height: 70,
   },
   navTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1a1a1a',
-    paddingBottom: 10,
   },
   content: {
     flex: 1,

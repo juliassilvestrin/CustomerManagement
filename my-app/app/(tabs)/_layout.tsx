@@ -1,32 +1,89 @@
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { View } from 'react-native';
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen 
-        name="index" 
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'white',
+          borderTopWidth: 1,
+          borderTopColor: '#e9ecef',
+          height: 60,
+        },
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8E8E93',
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
         options={{
-          headerShown: false
-        }} 
+          title: 'Dashboard',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
       />
-      <Stack.Screen 
-        name="customers" 
+      <Tabs.Screen
+        name="customers"
         options={{
-          headerShown: false
-        }} 
+          title: 'Customers',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
       />
-      <Stack.Screen 
-        name="(tabs)" 
+      <Tabs.Screen
+        name="jobs"
         options={{
-          headerShown: false
-        }} 
+          title: 'Jobs',
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <BlurView intensity={60} tint="light" style={{
+                position: 'absolute',
+                top: -4,
+                left: -8,
+                right: -8,
+                bottom: -4,
+                borderRadius: 8,
+              }} />
+              <Ionicons name="briefcase-outline" size={size} color="#D1D5DB" />
+            </View>
+          ),
+        }}
       />
-      <Stack.Screen 
-  name="customerdetails" 
-  options={{
-    headerShown: false
-  }} 
-/>
-    </Stack>
+      <Tabs.Screen
+        name="reports"
+        options={{
+          title: 'Reports',
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <BlurView intensity={60} tint="light" style={{
+                position: 'absolute',
+                top: -4,
+                left: -8,
+                right: -8,
+                bottom: -4,
+                borderRadius: 8,
+              }} />
+              <Ionicons name="bar-chart-outline" size={size} color="#D1D5DB" />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="customerdetails"
+        options={{
+          href: null, // Hidden from tabs but accessible via navigation
+        }}
+      />
+    </Tabs>
   );
 }

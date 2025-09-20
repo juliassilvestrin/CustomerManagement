@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from 'react-
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import BottomNavigation from '../../components/BottomNavigation';
+import * as Haptics from 'expo-haptics';
 
 const hardcodedCustomers = [
   { id: 1, name: 'ABC Construction Co.', email: 'contact@abcconstruction.com', phone: '(555) 123-4567', jobs: 3 },
@@ -22,7 +22,8 @@ export default function Customers() {
     setFilteredCustomers(filtered);
   }, [searchText]);
 
-  const handleCustomerPress = (customer) => {
+  const handleCustomerPress = async (customer) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: '/customerdetails',
       params: { 
@@ -35,16 +36,14 @@ export default function Customers() {
     });
   };
 
-  const handleDashboardPress = () => {
-    router.push('/');
+  const handleBackPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.back();
   };
 
-  const handleJobsPress = () => {
-    console.log('Jobs pressed');
-  };
-
-  const handleReportsPress = () => {
-    console.log('Reports pressed');
+  const handleAddPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    console.log('Add customer pressed');
   };
 
   return (
@@ -52,11 +51,13 @@ export default function Customers() {
       <StatusBar style="dark" />
       <View style={styles.container}>
         <View style={styles.navbar}>
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
           </Pressable>
           <Text style={styles.navTitle}>Customers</Text>
-          <Ionicons name="add" size={24} color="#007AFF" />
+          <Pressable onPress={handleAddPress}>
+            <Ionicons name="add" size={24} color="#007AFF" />
+          </Pressable>
         </View>
 
         <ScrollView style={styles.content}>
@@ -87,15 +88,6 @@ export default function Customers() {
             </Pressable>
           ))}
         </ScrollView>
-
-        {/* bottom nav  */}
-        <BottomNavigation
-          activeTab="customers"
-          onDashboardPress={handleDashboardPress}
-          onCustomersPress={() => {}}
-          onJobsPress={handleJobsPress}
-          onReportsPress={handleReportsPress}
-        />
       </View>
     </>
   );
