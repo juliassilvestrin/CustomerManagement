@@ -4,23 +4,42 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-
-const hardcodedCustomers = [
-  { id: 1, name: 'ABC Construction Co.', email: 'contact@abcconstruction.com', phone: '(555) 123-4567', jobs: 3 },
-  { id: 2, name: 'Smith Property Mgmt', email: 'info@smithproperty.com', phone: '(555) 987-6543', jobs: 1 },
-  { id: 3, name: 'Downtown Retail LLC', email: 'manager@downtownretail.com', phone: '(555) 456-7890', jobs: 2 },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { CustomerCard } from '../../components/CustomerCard';
 
 export default function Customers() {
+  const { t } = useLanguage();
   const [searchText, setSearchText] = useState('');
-  const [filteredCustomers, setFilteredCustomers] = useState(hardcodedCustomers);
+  const [customers, setCustomers] = useState([]);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
 
+  // load customers from storage when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      loadCustomers();
+    }, [])
+  );
+
+  const loadCustomers = async () => {
+    try {
+      const data = await AsyncStorage.getItem('customers');
+      const loadedCustomers = data ? JSON.parse(data) : [];
+      setCustomers(loadedCustomers);
+      setFilteredCustomers(loadedCustomers);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
+
+  // filter customers when search text changes
   useEffect(() => {
-    const filtered = hardcodedCustomers.filter(customer =>
+    const filtered = customers.filter(customer =>
       customer.name.toLowerCase().includes(searchText.toLowerCase())
     );
     setFilteredCustomers(filtered);
-  }, [searchText]);
+  }, [searchText, customers]);
 
   const handleCustomerPress = async (customer) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -31,7 +50,8 @@ export default function Customers() {
         customerName: customer.name,
         customerEmail: customer.email,
         customerPhone: customer.phone,
-        customerJobs: customer.jobs
+        customerJobs: customer.jobs,
+        customerContactPerson: customer.contactPerson,
       }
     });
   };
@@ -43,7 +63,7 @@ export default function Customers() {
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log('Add customer pressed');
+    router.push('/(tabs)/addcustomer');
   };
 
   return (
@@ -54,7 +74,7 @@ export default function Customers() {
           <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
           </Pressable>
-          <Text style={styles.navTitle}>Customers</Text>
+          <Text style={styles.navTitle}>{t('customers.title')}</Text>
           <Pressable onPress={handleAddPress}>
             <Ionicons name="add" size={24} color="#007AFF" />
           </Pressable>
@@ -66,27 +86,28 @@ export default function Customers() {
               <Ionicons name="search" size={20} color="#6c757d" />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search customers..."
+                placeholder={t('customers.search')}
                 value={searchText}
                 onChangeText={setSearchText}
               />
             </View>
           </View>
 
-          {filteredCustomers.map((customer) => (
-            <Pressable 
-              key={customer.id} 
-              style={styles.customerCard}
-              onPress={() => handleCustomerPress(customer)}
-            >
-              <View style={styles.customerHeader}>
-                <Text style={styles.customerName}>{customer.name}</Text>
-                <Text style={styles.jobCount}>{customer.jobs} jobs</Text>
-              </View>
-              <Text style={styles.customerInfo}>{customer.email}</Text>
-              <Text style={styles.customerInfo}>{customer.phone}</Text>
-            </Pressable>
-          ))}
+          {filteredCustomers.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="people-outline" size={64} color="#d1d5db" />
+              <Text style={styles.emptyTitle}>{t('customers.empty')}</Text>
+              <Text style={styles.emptySubtitle}>{t('customers.emptyDesc')}</Text>
+            </View>
+          ) : (
+            filteredCustomers.map((customer) => (
+              <CustomerCard
+                key={customer.id}
+                customer={customer}
+                onPress={() => handleCustomerPress(customer)}
+              />
+            ))
+          )}
         </ScrollView>
       </View>
     </>
@@ -137,36 +158,22 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  customerCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-    marginHorizontal: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  customerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  emptyState: {
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
-  customerName: {
-    fontSize: 16,
+  emptyTitle: {
+    fontSize: 20,
     fontWeight: '600',
     color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
   },
-  jobCount: {
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  customerInfo: {
+  emptySubtitle: {
+    fontSize: 16,
     color: '#6c757d',
-    fontSize: 14,
-    marginBottom: 2,
+    textAlign: 'center',
   },
 });

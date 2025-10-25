@@ -4,8 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function CustomerDetails() {
+  const { t } = useLanguage();
   const params = useLocalSearchParams();
   
   const customer = {
@@ -14,6 +16,7 @@ export default function CustomerDetails() {
     email: params.customerEmail || '',
     phone: params.customerPhone || '',
     jobs: params.customerJobs || 0,
+    contactPerson: params.customerContactPerson || 'N/A',
   };
 
   const handleBackPress = async () => {
@@ -45,18 +48,18 @@ export default function CustomerDetails() {
           <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
           </Pressable>
-          <Text style={styles.navTitle}>Customer Details</Text>
+          <Text style={styles.navTitle}>{t('customerDetails.title')}</Text>
           <Ionicons name="person-circle-outline" size={24} color="#007AFF" />
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* custom header */}
+          {/* customer header */}
           <View style={styles.headerSection}>
             <View style={styles.customerIcon}>
               <Ionicons name="business" size={48} color="#007AFF" />
             </View>
             <Text style={styles.customerName}>{customer.name}</Text>
-            <Text style={styles.customerType}>Commercial Client</Text>
+            <Text style={styles.customerType}>{t('customerDetails.commercial')}</Text>
           </View>
 
           {/* contact info */}
@@ -66,18 +69,17 @@ export default function CustomerDetails() {
                 <Ionicons name="mail" size={20} color="#007AFF" />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoLabel}>{t('customerDetails.email')}</Text>
                 <Text style={styles.infoValue}>{customer.email}</Text>
               </View>
             </Pressable>
 
-        
             <Pressable style={styles.infoRow} onPress={handleCallPress}>
               <View style={styles.infoIcon}>
                 <Ionicons name="call" size={20} color="#007AFF" />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoLabel}>{t('customerDetails.phone')}</Text>
                 <Text style={styles.infoValue}>{customer.phone}</Text>
               </View>
             </Pressable>
@@ -87,32 +89,30 @@ export default function CustomerDetails() {
                 <Ionicons name="location" size={20} color="#007AFF" />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Address</Text>
+                <Text style={styles.infoLabel}>{t('customerDetails.address')}</Text>
                 <Pressable onPress={handleViewLocationPress}>
-                  <Text style={styles.linkText}>View Location</Text>
+                  <Text style={styles.linkText}>{t('customerDetails.viewLocation')}</Text>
                 </Pressable>
               </View>
             </Pressable>
-
 
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="person" size={20} color="#007AFF" />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Contact Person</Text>
-                <Text style={styles.infoValue}>John Smith</Text>
+                <Text style={styles.infoLabel}>{t('customerDetails.contactPerson')}</Text>
+                <Text style={styles.infoValue}>{customer.contactPerson}</Text>
               </View>
             </View>
 
-          
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="briefcase" size={20} color="#007AFF" />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Active Jobs</Text>
-                <Text style={styles.infoValue}>{customer.jobs} jobs</Text>
+                <Text style={styles.infoLabel}>{t('customerDetails.activeJobs')}</Text>
+                <Text style={styles.infoValue}>{customer.jobs} {t('customers.jobs')}</Text>
               </View>
             </View>
           </View>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface CustomerCardProps {
   customer: {
@@ -13,11 +14,13 @@ interface CustomerCardProps {
 }
 
 export const CustomerCard = ({ customer, onPress }: CustomerCardProps) => {
+  const { t } = useLanguage();
+
   return (
     <Pressable style={styles.customerCard} onPress={onPress}>
       <View style={styles.customerHeader}>
         <Text style={styles.customerName}>{customer.name}</Text>
-        <Text style={styles.jobCount}>{customer.jobs} jobs</Text>
+        <Text style={styles.jobCount}>{customer.jobs} {t('customers.jobs')}</Text>
       </View>
       <Text style={styles.customerInfo}>{customer.email}</Text>
       <Text style={styles.customerInfo}>{customer.phone}</Text>

@@ -6,8 +6,12 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import WelcomeSection from '../../components/WelcomeSection';
 import DashboardCard from '../../components/DashboardCard';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Dashboard() {
+  const { t } = useLanguage();
+
   const handleCustomersPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/customers');
@@ -15,7 +19,7 @@ export default function Dashboard() {
 
   const handleAddCustomerPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log('Add Customer pressed');
+    router.push('/(tabs)/addcustomer');
   };
 
   const handleCreateJobPress = async () => {
@@ -29,9 +33,11 @@ export default function Dashboard() {
       <View style={styles.container}>
         {/* nav bar */}
         <View style={styles.navbar}>
-          <View />
-          <Text style={styles.navTitle}>Dashboard</Text>
-          <Ionicons name="notifications-outline" size={24} color="#007AFF" />
+          <View style={{ width: 80 }} />
+          <Text style={styles.navTitle}>{t('dashboard.title')}</Text>
+          <View style={{ width: 80, alignItems: 'flex-end' }}>
+            <LanguageSwitcher />
+          </View>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -41,27 +47,27 @@ export default function Dashboard() {
           <View style={styles.cardsContainer}>
             <View style={styles.cardsRow}>
               <DashboardCard
-                title="Active Jobs"
+                title={t('dashboard.activeJobs')}
                 number="24"
               />
               <DashboardCard
-                title="Total Customers"
+                title={t('dashboard.totalCustomers')}
                 number="12"
                 onPress={handleCustomersPress}
               />
             </View>
 
-            {/* quick cacitons */}
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            {/* quick actions */}
+            <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
             <View style={styles.cardsRow}>
               <DashboardCard
                 iconName="person-add"
-                title="Add Customer"
+                title={t('dashboard.addCustomer')}
                 onPress={handleAddCustomerPress}
               />
               <DashboardCard
                 iconName="calendar"
-                title="Create Job"
+                title={t('dashboard.createJob')}
                 onPress={handleCreateJobPress}
               />
             </View>

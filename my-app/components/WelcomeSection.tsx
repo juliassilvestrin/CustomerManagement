@@ -1,23 +1,27 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface WelcomeSectionProps {
   userName: string;
   subtitle?: string;
 }
 
-export default function WelcomeSection({ userName, subtitle = "Here's your business overview" }: WelcomeSectionProps) {
+export default function WelcomeSection({ userName }: WelcomeSectionProps) {
+  const { t } = useLanguage();
+
+  // get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return t('dashboard.welcome.morning');
+    if (hour < 18) return t('dashboard.welcome.afternoon');
+    return t('dashboard.welcome.evening');
   };
 
   return (
     <View style={styles.welcomeSection}>
       <Text style={styles.welcomeTitle}>{getGreeting()}, {userName}!</Text>
-      <Text style={styles.welcomeSubtitle}>{subtitle}</Text>
+      <Text style={styles.welcomeSubtitle}>{t('dashboard.welcome.subtitle')}</Text>
     </View>
   );
 }
