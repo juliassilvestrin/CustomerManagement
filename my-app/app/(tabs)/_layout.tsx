@@ -1,7 +1,5 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { View } from 'react-native';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 
 export default function RootLayout() {
@@ -47,17 +45,7 @@ export default function RootLayout() {
           options={{
             title: 'Jobs',
             tabBarIcon: ({ color, size }) => (
-              <View>
-                <BlurView intensity={60} tint="light" style={{
-                  position: 'absolute',
-                  top: -4,
-                  left: -8,
-                  right: -8,
-                  bottom: -4,
-                  borderRadius: 8,
-                }} />
-                <Ionicons name="briefcase-outline" size={size} color="#D1D5DB" />
-              </View>
+              <Ionicons name="briefcase-outline" size={size} color={color} />
             ),
           }}
         />

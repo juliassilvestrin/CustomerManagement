@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { CustomerCard } from '../../components/CustomerCard';
+import { EmptyState } from '../../components/EmptyState';
 
 export default function Customers() {
   const { t } = useLanguage();
@@ -56,11 +57,6 @@ export default function Customers() {
     });
   };
 
-  const handleBackPress = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.back();
-  };
-
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push('/(tabs)/addcustomer');
@@ -71,13 +67,13 @@ export default function Customers() {
       <StatusBar style="dark" />
       <View style={styles.container}>
         <View style={styles.navbar}>
-          <Pressable onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color="#007AFF" />
-          </Pressable>
+          <View style={{ width: 80 }} />
           <Text style={styles.navTitle}>{t('customers.title')}</Text>
-          <Pressable onPress={handleAddPress}>
-            <Ionicons name="add" size={24} color="#007AFF" />
-          </Pressable>
+          <View style={{ width: 80, alignItems: 'flex-end' }}>
+            <Pressable onPress={handleAddPress}>
+              <Ionicons name="add" size={24} color="#007AFF" />
+            </Pressable>
+          </View>
         </View>
 
         <ScrollView style={styles.content}>
@@ -94,11 +90,11 @@ export default function Customers() {
           </View>
 
           {filteredCustomers.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={64} color="#d1d5db" />
-              <Text style={styles.emptyTitle}>{t('customers.empty')}</Text>
-              <Text style={styles.emptySubtitle}>{t('customers.emptyDesc')}</Text>
-            </View>
+            <EmptyState
+              icon="people-outline"
+              title={t('customers.empty')}
+              subtitle={t('customers.emptyDesc')}
+            />
           ) : (
             filteredCustomers.map((customer) => (
               <CustomerCard
@@ -157,23 +153,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: '#6c757d',
-    textAlign: 'center',
   },
 });

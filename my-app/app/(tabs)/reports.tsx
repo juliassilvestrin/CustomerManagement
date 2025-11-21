@@ -6,6 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { EmptyState } from '../../components/EmptyState';
 
 export default function Reports() {
   const { t, language } = useLanguage();
@@ -75,11 +76,11 @@ export default function Reports() {
 
         <ScrollView style={styles.content}>
           {reports.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="document-text-outline" size={64} color="#d1d5db" />
-              <Text style={styles.emptyTitle}>{t('reports.empty')}</Text>
-              <Text style={styles.emptySubtitle}>{t('reports.emptyDesc')}</Text>
-            </View>
+            <EmptyState
+              icon="document-text-outline"
+              title={t('reports.empty')}
+              subtitle={t('reports.emptyDesc')}
+            />
           ) : (
             reports.map((report) => (
               <Pressable 
@@ -134,24 +135,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: '#6c757d',
-    textAlign: 'center',
   },
   reportCard: {
     backgroundColor: 'white',
