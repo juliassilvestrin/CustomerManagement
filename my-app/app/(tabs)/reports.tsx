@@ -4,34 +4,24 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { EmptyState } from '../../components/EmptyState';
+import { useReports } from './../hooks/useReports';
 
 export default function Reports() {
   const { t, language } = useLanguage();
-  const [reports, setReports] = useState([]);
+  const { reports, loadReports } = useReports();
 
   // load reports from storage when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       loadReports();
-    }, [])
+    }, [loadReports])
   );
-
-  const loadReports = async () => {
-    try {
-      const data = await AsyncStorage.getItem('reports');
-      const loadedReports = data ? JSON.parse(data) : [];
-      setReports(loadedReports);
-    } catch (error) {
-      console.error('Error loading reports:', error);
-    }
-  };
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(tabs)/addreport');
+    router.push('/addreport');
   };
 
   const handleReportPress = async (report) => {

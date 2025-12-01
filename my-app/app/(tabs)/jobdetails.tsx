@@ -4,10 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useJobs } from '../hooks/useJobs';
 
 export default function JobDetails() {
   const params = useLocalSearchParams();
+  const { deleteJob } = useJobs();
   
   const job = {
     id: params.jobId,
@@ -63,21 +64,11 @@ export default function JobDetails() {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            try {
-              // Get existing jobs
-              const data = await AsyncStorage.getItem('jobs');
-              const jobs = data ? JSON.parse(data) : [];
-
-              // Filter out the job to delete
-              const updatedJobs = jobs.filter(j => j.id.toString() !== job.id.toString());
-
-              // Save back to storage
-              await AsyncStorage.setItem('jobs', JSON.stringify(updatedJobs));
-
-              // Navigate back to jobs list
+            const success = await deleteJob(job.id);
+            
+            if (success) {
               router.push('/(tabs)/jobs');
-            } catch (error) {
-              console.error('Error deleting job:', error);
+            } else {
               Alert.alert('Error', 'Failed to delete job');
             }
           },
@@ -88,7 +79,7 @@ export default function JobDetails() {
 
   const handleCustomerPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Navigate to customer details (you'll need to load full customer data)
+    // navigate to customer details
     console.log('Navigate to customer:', job.customerId);
   };
 
@@ -144,7 +135,7 @@ export default function JobDetails() {
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* Nav bar */}
+        {/* nav bar */}
         <View style={styles.navbar}>
           <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
@@ -156,7 +147,7 @@ export default function JobDetails() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Job Header */}
+          {/* job header */}
           <View style={styles.headerSection}>
             <View style={styles.jobIcon}>
               <Ionicons name="briefcase" size={48} color="#007AFF" />
@@ -169,9 +160,9 @@ export default function JobDetails() {
             </View>
           </View>
 
-          {/* Job Info */}
+          {/* job info */}
           <View style={styles.infoSection}>
-            {/* Customer */}
+            {/* customer */}
             <Pressable style={styles.infoRow} onPress={handleCustomerPress}>
               <View style={styles.infoIcon}>
                 <Ionicons name="person" size={20} color="#007AFF" />
@@ -182,7 +173,7 @@ export default function JobDetails() {
               </View>
             </Pressable>
 
-            {/* Priority */}
+            {/* priority */}
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="flag" size={20} color="#007AFF" />
@@ -195,7 +186,7 @@ export default function JobDetails() {
               </View>
             </View>
 
-            {/* Scheduled Date */}
+            {/* scheduled date */}
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="calendar" size={20} color="#007AFF" />
@@ -206,7 +197,7 @@ export default function JobDetails() {
               </View>
             </View>
 
-            {/* Due Date */}
+            {/* due date */}
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="calendar-outline" size={20} color="#007AFF" />
@@ -217,7 +208,7 @@ export default function JobDetails() {
               </View>
             </View>
 
-            {/* Location */}
+            {/* location */}
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="location" size={20} color="#007AFF" />
@@ -228,7 +219,7 @@ export default function JobDetails() {
               </View>
             </View>
 
-            {/* Description */}
+            {/* description */}
             {job.description ? (
               <View style={styles.infoRow}>
                 <View style={styles.infoIcon}>
@@ -241,7 +232,7 @@ export default function JobDetails() {
               </View>
             ) : null}
 
-            {/* Notes */}
+            {/* notes */}
             {job.notes ? (
               <View style={styles.infoRow}>
                 <View style={styles.infoIcon}>
@@ -255,7 +246,7 @@ export default function JobDetails() {
             ) : null}
           </View>
 
-          {/* Delete Button */}
+          {/* delete button */}
           <Pressable style={styles.deleteButton} onPress={handleDeletePress}>
             <Ionicons name="trash-outline" size={20} color="white" />
             <Text style={styles.deleteButtonText}>Delete Job</Text>

@@ -4,33 +4,25 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SearchBar } from '../../components/SearchBar';
 import { FilterButton } from '../../components/FilterButton';
 import { JobCard } from '../../components/JobCard';
 import { EmptyState } from '../../components/EmptyState';
+import { useJobs } from './../hooks/useJobs';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Jobs() {
-  const [jobs, setJobs] = useState([]);
+  const { t } = useLanguage();
+  const { jobs, loadJobs } = useJobs();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
 
-  // Load jobs from storage when screen is focused
+  // reload jobs when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       loadJobs();
-    }, [])
+    }, [loadJobs])
   );
-
-  const loadJobs = async () => {
-    try {
-      const data = await AsyncStorage.getItem('jobs');
-      const loadedJobs = data ? JSON.parse(data) : [];
-      setJobs(loadedJobs);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-    }
-  };
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -62,12 +54,9 @@ export default function Jobs() {
     setActiveFilter(filter);
   };
 
-  // Filter and search jobs
+  // filter and search jobs
   const filteredJobs = jobs.filter(job => {
-    // Filter by status
     const matchesFilter = activeFilter === 'all' || job.status === activeFilter;
-    
-    // Filter by search query
     const matchesSearch = searchQuery === '' || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.customerName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -79,10 +68,10 @@ export default function Jobs() {
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* Nav bar */}
+        {/* nav bar */}
         <View style={styles.navbar}>
           <View style={{ width: 80 }} />
-          <Text style={styles.navTitle}>Jobs</Text>
+          <Text style={styles.navTitle}>{t('jobs.title')}</Text>
           <View style={{ width: 80, alignItems: 'flex-end' }}>
             <Pressable onPress={handleAddPress}>
               <Ionicons name="add" size={24} color="#007AFF" />
@@ -91,16 +80,16 @@ export default function Jobs() {
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Search Bar */}
+          {/* search bar */}
           <View style={styles.searchSection}>
             <SearchBar
-              placeholder="Search jobs or customers..."
+              placeholder={t('jobs.search')}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
           </View>
 
-          {/* Filter Buttons */}
+          {/* filter buttons */}
           <View style={styles.filterSection}>
             <ScrollView 
               horizontal 
@@ -108,36 +97,36 @@ export default function Jobs() {
               contentContainerStyle={styles.filterContent}
             >
               <FilterButton
-                label="All"
+                label={t('jobs.filterAll')}
                 active={activeFilter === 'all'}
                 onPress={() => handleFilterPress('all')}
               />
               <FilterButton
-                label="Scheduled"
+                label={t('jobs.filterScheduled')}
                 active={activeFilter === 'scheduled'}
                 onPress={() => handleFilterPress('scheduled')}
               />
               <FilterButton
-                label="In Progress"
+                label={t('jobs.filterInProgress')}
                 active={activeFilter === 'in-progress'}
                 onPress={() => handleFilterPress('in-progress')}
               />
               <FilterButton
-                label="Completed"
+                label={t('jobs.filterCompleted')}
                 active={activeFilter === 'completed'}
                 onPress={() => handleFilterPress('completed')}
               />
             </ScrollView>
           </View>
 
-          {/* Jobs List or Empty State */}
+          {/* jobs list */}
           {filteredJobs.length === 0 ? (
             <EmptyState
               icon="briefcase-outline"
-              title={jobs.length === 0 ? "No Jobs Yet" : "No Jobs Found"}
+              title={jobs.length === 0 ? t('jobs.empty') : "No Jobs Found"}
               subtitle={
                 jobs.length === 0 
-                  ? "Tap + to create your first job" 
+                  ? t('jobs.emptyDesc')
                   : searchQuery 
                     ? "Try adjusting your search" 
                     : "No jobs match this filter"

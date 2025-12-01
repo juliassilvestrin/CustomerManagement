@@ -4,10 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useJobs } from '../hooks/useJobs';
+import { useCustomers } from '../hooks/useCustomer';
 
 export default function AddJob() {
+  const { addJob } = useJobs();
+  const { customers, loadCustomers } = useCustomers();
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [customerId, setCustomerId] = useState('');
@@ -18,7 +22,6 @@ export default function AddJob() {
   const [dueDate, setDueDate] = useState(new Date());
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [customers, setCustomers] = useState([]);
   
   const [showScheduledPicker, setShowScheduledPicker] = useState(false);
   const [showDuePicker, setShowDuePicker] = useState(false);
@@ -26,20 +29,10 @@ export default function AddJob() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
 
-  // Load customers when screen loads
+  // load customers when screen loads
   useEffect(() => {
     loadCustomers();
   }, []);
-
-  const loadCustomers = async () => {
-    try {
-      const data = await AsyncStorage.getItem('customers');
-      const loadedCustomers = data ? JSON.parse(data) : [];
-      setCustomers(loadedCustomers);
-    } catch (error) {
-      console.error('Error loading customers:', error);
-    }
-  };
 
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -63,7 +56,7 @@ export default function AddJob() {
   const handleSave = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Validation
+    // validation
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a job title');
       return;
@@ -79,9 +72,8 @@ export default function AddJob() {
       return;
     }
 
-    // Create new job object
+    // create new job
     const newJob = {
-      id: Date.now(),
       title,
       description,
       customerName,
@@ -97,24 +89,12 @@ export default function AddJob() {
       createdAt: new Date().toISOString(),
     };
 
-    try {
-      // Get existing jobs from storage
-      const existingData = await AsyncStorage.getItem('jobs');
-      const jobs = existingData ? JSON.parse(existingData) : [];
-
-      // Add new job
-      jobs.push(newJob);
-
-      // Save back to storage
-      await AsyncStorage.setItem('jobs', JSON.stringify(jobs));
-
-      // Clear form
+    const savedJob = await addJob(newJob);
+    
+    if (savedJob) {
       clearForm();
-
-      // Go back to jobs list
       router.push('/(tabs)/jobs');
-    } catch (error) {
-      console.error('Error saving job:', error);
+    } else {
       Alert.alert('Error', 'Failed to save job');
     }
   };
@@ -163,7 +143,7 @@ export default function AddJob() {
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* Nav bar */}
+        {/* nav bar */}
         <View style={styles.navbar}>
           <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
@@ -174,7 +154,7 @@ export default function AddJob() {
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.form}>
-            {/* Job Title */}
+            {/* job title */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Job Title *</Text>
               <TextInput
@@ -185,7 +165,7 @@ export default function AddJob() {
               />
             </View>
 
-            {/* Description */}
+            {/* description */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Description</Text>
               <TextInput
@@ -199,7 +179,7 @@ export default function AddJob() {
               />
             </View>
 
-            {/* Customer Picker */}
+            {/* customer picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Customer *</Text>
               <Pressable 
@@ -213,7 +193,7 @@ export default function AddJob() {
               </Pressable>
             </View>
 
-            {/* Status Picker */}
+            {/* status picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Status</Text>
               <Pressable 
@@ -225,7 +205,7 @@ export default function AddJob() {
               </Pressable>
             </View>
 
-            {/* Priority Picker */}
+            {/* priority picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Priority</Text>
               <Pressable 
@@ -237,7 +217,7 @@ export default function AddJob() {
               </Pressable>
             </View>
 
-            {/* Scheduled Date */}
+            {/* scheduled date */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Scheduled Date</Text>
               <Pressable 
@@ -257,7 +237,7 @@ export default function AddJob() {
               )}
             </View>
 
-            {/* Due Date */}
+            {/* due date */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Due Date</Text>
               <Pressable 
@@ -277,7 +257,7 @@ export default function AddJob() {
               )}
             </View>
 
-            {/* Location/Address */}
+            {/* location */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Location *</Text>
               <TextInput
@@ -288,7 +268,7 @@ export default function AddJob() {
               />
             </View>
 
-            {/* Notes */}
+            {/* notes */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Notes</Text>
               <TextInput
@@ -302,14 +282,14 @@ export default function AddJob() {
               />
             </View>
 
-            {/* Save Button */}
+            {/* save button */}
             <Pressable style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Save Job</Text>
             </Pressable>
           </View>
         </ScrollView>
 
-        {/* Customer Modal */}
+        {/* customer modal */}
         <Modal
           visible={showCustomerModal}
           transparent={true}
@@ -347,7 +327,7 @@ export default function AddJob() {
           </View>
         </Modal>
 
-        {/* Status Modal */}
+        {/* status modal */}
         <Modal
           visible={showStatusModal}
           transparent={true}
@@ -405,7 +385,7 @@ export default function AddJob() {
           </View>
         </Modal>
 
-        {/* Priority Modal */}
+        {/* priority modal */}
         <Modal
           visible={showPriorityModal}
           transparent={true}

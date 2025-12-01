@@ -4,19 +4,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCustomers } from '../hooks/useCustomer';
 
 export default function AddCustomer() {
   const { t } = useLanguage();
+  const { addCustomer } = useCustomers();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [contactPerson, setContactPerson] = useState('');
 
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // clear form when going back
     clearForm();
     router.back();
   };
@@ -25,6 +27,7 @@ export default function AddCustomer() {
     setName('');
     setEmail('');
     setPhone('');
+    setAddress('');
     setContactPerson('');
   };
 
@@ -33,32 +36,20 @@ export default function AddCustomer() {
 
     // create new customer object
     const newCustomer = {
-      id: Date.now(),
       name,
       email,
       phone,
+      address,
       contactPerson,
       jobs: 0,
     };
 
-    try {
-      // get existing customers from storage
-      const existingData = await AsyncStorage.getItem('customers');
-      const customers = existingData ? JSON.parse(existingData) : [];
-
-      // add new customer
-      customers.push(newCustomer);
-
-      // save back to storage
-      await AsyncStorage.setItem('customers', JSON.stringify(customers));
-
-      // clear form
+    const savedCustomer = await addCustomer(newCustomer);
+    
+    if (savedCustomer) {
       clearForm();
-
-      // go back to customers list
       router.push('/(tabs)/customers');
-    } catch (error) {
-      console.error('Error saving customer:', error);
+    } else {
       Alert.alert('Error', 'Failed to save customer');
     }
   };
@@ -111,6 +102,19 @@ export default function AddCustomer() {
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
+              />
+            </View>
+
+            {/* address */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>{t('addCustomer.address')}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('addCustomer.address')}
+                value={address}
+                onChangeText={setAddress}
+                multiline
+                numberOfLines={3}
               />
             </View>
 

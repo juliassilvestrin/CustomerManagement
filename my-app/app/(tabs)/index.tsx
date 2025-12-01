@@ -1,20 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import WelcomeSection from '../../components/WelcomeSection';
 import DashboardCard from '../../components/DashboardCard';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useJobs } from '../hooks/useJobs';
+import { useCustomers } from '../hooks/useCustomer';
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const { jobs } = useJobs();
+  const { customers } = useCustomers();
+
+  // calculate active jobs (not completed)
+  const activeJobsCount = jobs.filter(job => job.status !== 'completed').length;
+  const totalCustomersCount = customers.length;
 
   const handleCustomersPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/customers');
+    router.push('/(tabs)/customers');
   };
 
   const handleAddCustomerPress = async () => {
@@ -24,7 +31,12 @@ export default function Dashboard() {
 
   const handleCreateJobPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log('Create Job pressed');
+    router.push('/(tabs)/addjob');
+  };
+
+  const handleSettingsPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/(tabs)/settings');
   };
 
   return (
@@ -36,7 +48,9 @@ export default function Dashboard() {
           <View style={{ width: 80 }} />
           <Text style={styles.navTitle}>{t('dashboard.title')}</Text>
           <View style={{ width: 80, alignItems: 'flex-end' }}>
-            <LanguageSwitcher />
+            <Pressable onPress={handleSettingsPress}>
+              <Ionicons name="settings-outline" size={24} color="#007AFF" />
+            </Pressable>
           </View>
         </View>
 
@@ -48,11 +62,11 @@ export default function Dashboard() {
             <View style={styles.cardsRow}>
               <DashboardCard
                 title={t('dashboard.activeJobs')}
-                number="24"
+                number={activeJobsCount.toString()}
               />
               <DashboardCard
                 title={t('dashboard.totalCustomers')}
-                number="12"
+                number={totalCustomersCount.toString()}
                 onPress={handleCustomersPress}
               />
             </View>

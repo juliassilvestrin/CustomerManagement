@@ -4,11 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useJobs } from '../hooks/useJobs';
+import { useCustomers } from '../hooks/useCustomer';
 
 export default function EditJob() {
   const params = useLocalSearchParams();
+  const { updateJob } = useJobs();
+  const { customers, loadCustomers } = useCustomers();
 
   const [title, setTitle] = useState(params.jobTitle || '');
   const [description, setDescription] = useState(params.jobDescription || '');
@@ -20,7 +23,6 @@ export default function EditJob() {
   const [dueDate, setDueDate] = useState(new Date(params.jobDueDate || new Date()));
   const [address, setAddress] = useState(params.jobLocationAddress || '');
   const [notes, setNotes] = useState(params.jobNotes || '');
-  const [customers, setCustomers] = useState([]);
   
   const [showScheduledPicker, setShowScheduledPicker] = useState(false);
   const [showDuePicker, setShowDuePicker] = useState(false);
@@ -28,20 +30,10 @@ export default function EditJob() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
 
-  // Load customers when screen loads
+  // load customers when screen loads
   useEffect(() => {
     loadCustomers();
   }, []);
-
-  const loadCustomers = async () => {
-    try {
-      const data = await AsyncStorage.getItem('customers');
-      const loadedCustomers = data ? JSON.parse(data) : [];
-      setCustomers(loadedCustomers);
-    } catch (error) {
-      console.error('Error loading customers:', error);
-    }
-  };
 
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -51,7 +43,7 @@ export default function EditJob() {
   const handleSave = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Validation
+    // validation
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a job title');
       return;
@@ -67,7 +59,7 @@ export default function EditJob() {
       return;
     }
 
-    // Create updated job object
+    // create updated job object
     const updatedJob = {
       id: parseInt(params.jobId),
       title,
@@ -85,21 +77,9 @@ export default function EditJob() {
       createdAt: params.jobCreatedAt || new Date().toISOString(),
     };
 
-    try {
-      // Get existing jobs from storage
-      const existingData = await AsyncStorage.getItem('jobs');
-      const jobs = existingData ? JSON.parse(existingData) : [];
-
-      // Find and update the job
-      const jobIndex = jobs.findIndex(j => j.id.toString() === params.jobId.toString());
-      if (jobIndex !== -1) {
-        jobs[jobIndex] = updatedJob;
-      }
-
-      // Save back to storage
-      await AsyncStorage.setItem('jobs', JSON.stringify(jobs));
-
-      // Navigate back to job details with updated data
+    const success = await updateJob(params.jobId, updatedJob);
+    
+    if (success) {
       router.push({
         pathname: '/jobdetails',
         params: {
@@ -116,8 +96,7 @@ export default function EditJob() {
           jobNotes: updatedJob.notes,
         }
       });
-    } catch (error) {
-      console.error('Error updating job:', error);
+    } else {
       Alert.alert('Error', 'Failed to update job');
     }
   };
@@ -166,7 +145,7 @@ export default function EditJob() {
     <>
       <StatusBar style="dark" />
       <View style={styles.container}>
-        {/* Nav bar */}
+        {/* nav bar */}
         <View style={styles.navbar}>
           <Pressable onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#007AFF" />
@@ -177,7 +156,7 @@ export default function EditJob() {
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.form}>
-            {/* Job Title */}
+            {/* job title */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Job Title *</Text>
               <TextInput
@@ -188,7 +167,7 @@ export default function EditJob() {
               />
             </View>
 
-            {/* Description */}
+            {/* description */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Description</Text>
               <TextInput
@@ -202,7 +181,7 @@ export default function EditJob() {
               />
             </View>
 
-            {/* Customer Picker */}
+            {/* customer picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Customer *</Text>
               <Pressable 
@@ -216,7 +195,7 @@ export default function EditJob() {
               </Pressable>
             </View>
 
-            {/* Status Picker */}
+            {/* status picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Status</Text>
               <Pressable 
@@ -228,7 +207,7 @@ export default function EditJob() {
               </Pressable>
             </View>
 
-            {/* Priority Picker */}
+            {/* priority picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Priority</Text>
               <Pressable 
@@ -240,7 +219,7 @@ export default function EditJob() {
               </Pressable>
             </View>
 
-            {/* Scheduled Date */}
+            {/* scheduled date */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Scheduled Date</Text>
               <Pressable 
@@ -260,7 +239,7 @@ export default function EditJob() {
               )}
             </View>
 
-            {/* Due Date */}
+            {/* due date */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Due Date</Text>
               <Pressable 
@@ -280,7 +259,7 @@ export default function EditJob() {
               )}
             </View>
 
-            {/* Location/Address */}
+            {/* location */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Location *</Text>
               <TextInput
@@ -291,7 +270,7 @@ export default function EditJob() {
               />
             </View>
 
-            {/* Notes */}
+            {/* notes */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Notes</Text>
               <TextInput
@@ -305,14 +284,14 @@ export default function EditJob() {
               />
             </View>
 
-            {/* Save Button */}
+            {/* save button */}
             <Pressable style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Save Changes</Text>
             </Pressable>
           </View>
         </ScrollView>
 
-        {/* Customer Modal */}
+        {/* customer modal */}
         <Modal
           visible={showCustomerModal}
           transparent={true}
@@ -350,7 +329,7 @@ export default function EditJob() {
           </View>
         </Modal>
 
-        {/* Status Modal */}
+        {/* status modal */}
         <Modal
           visible={showStatusModal}
           transparent={true}
@@ -408,7 +387,7 @@ export default function EditJob() {
           </View>
         </Modal>
 
-        {/* Priority Modal */}
+        {/* priority modal */}
         <Modal
           visible={showPriorityModal}
           transparent={true}

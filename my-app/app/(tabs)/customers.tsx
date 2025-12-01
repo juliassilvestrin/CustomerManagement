@@ -4,35 +4,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { CustomerCard } from '../../components/CustomerCard';
 import { EmptyState } from '../../components/EmptyState';
+import { useCustomers } from '../hooks/useCustomer';
 
 export default function Customers() {
   const { t } = useLanguage();
+  const { customers, loadCustomers } = useCustomers();
   const [searchText, setSearchText] = useState('');
-  const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
 
   // load customers from storage when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       loadCustomers();
-    }, [])
+    }, [loadCustomers])
   );
-
-  const loadCustomers = async () => {
-    try {
-      const data = await AsyncStorage.getItem('customers');
-      const loadedCustomers = data ? JSON.parse(data) : [];
-      setCustomers(loadedCustomers);
-      setFilteredCustomers(loadedCustomers);
-    } catch (error) {
-      console.error('Error loading customers:', error);
-    }
-  };
 
   // filter customers when search text changes
   useEffect(() => {
@@ -59,7 +48,7 @@ export default function Customers() {
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(tabs)/addcustomer');
+    router.push('/addcustomer');
   };
 
   return (

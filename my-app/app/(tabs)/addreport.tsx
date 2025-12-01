@@ -5,11 +5,13 @@ import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useReports } from '../hooks/useReports';
 
 export default function AddReport() {
   const { t } = useLanguage();
+  const { addReport } = useReports();
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState('');
@@ -78,31 +80,18 @@ export default function AddReport() {
 
     // create new report object
     const newReport = {
-      id: Date.now(),
       title,
       description,
       photoUri,
       date: new Date().toISOString(),
     };
 
-    try {
-      // get existing reports from storage
-      const existingData = await AsyncStorage.getItem('reports');
-      const reports = existingData ? JSON.parse(existingData) : [];
-
-      // add new report
-      reports.push(newReport);
-
-      // save back to storage
-      await AsyncStorage.setItem('reports', JSON.stringify(reports));
-
-      // clear form
+    const savedReport = await addReport(newReport);
+    
+    if (savedReport) {
       clearForm();
-
-      // go back to reports list
       router.push('/(tabs)/reports');
-    } catch (error) {
-      console.error('Error saving report:', error);
+    } else {
       Alert.alert('Error', 'Failed to save report');
     }
   };

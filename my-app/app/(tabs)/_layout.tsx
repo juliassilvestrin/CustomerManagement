@@ -58,30 +58,16 @@ export default function RootLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="customerdetails"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="addcustomer"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="addreport"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="reportdetails"
-          options={{
-            href: null,
-          }}
-        />
+        
+        {/* Hidden screens - not in tab bar */}
+        <Tabs.Screen name="customerdetails" options={{ href: null }} />
+        <Tabs.Screen name="addcustomer" options={{ href: null }} />
+        <Tabs.Screen name="addjob" options={{ href: null }} />
+        <Tabs.Screen name="editjob" options={{ href: null }} />
+        <Tabs.Screen name="jobdetails" options={{ href: null }} />
+        <Tabs.Screen name="addreport" options={{ href: null }} />
+        <Tabs.Screen name="reportdetails" options={{ href: null }} />
+        <Tabs.Screen name="settings" options={{ href: null }} />
       </Tabs>
     </LanguageProvider>
   );

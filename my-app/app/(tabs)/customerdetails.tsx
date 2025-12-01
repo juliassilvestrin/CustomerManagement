@@ -1,42 +1,132 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { useJobs } from '../hooks/useJobs';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function CustomerDetails() {
   const { t } = useLanguage();
   const params = useLocalSearchParams();
+  const { jobs } = useJobs();
   
   const customer = {
     id: params.customerId,
     name: params.customerName || 'Unknown Customer',
     email: params.customerEmail || '',
     phone: params.customerPhone || '',
-    jobs: params.customerJobs || 0,
+    address: params.customerAddress || '',
     contactPerson: params.customerContactPerson || 'N/A',
   };
 
+  // get all jobs for this customer
+  const customerJobs = jobs.filter(job => job.customerId === parseInt(customer.id));
+
+//geocode stuff 
+  const getCoordinates = (address) => {
+    if (!address) {
+      return {
+        latitude: 37.6775,
+        longitude: -113.0619,
+      };
+    }
+    
+  
+    return {
+      latitude: 37.6775,
+      longitude: -113.0619,
+    };
+  };
+
+  const coordinates = getCoordinates(customer.address);
+
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(tabs)/customers');
+    router.back();
   };
 
   const handleCallPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    console.log('Call customer:', customer.phone);
+    if (customer.phone) {
+      Linking.openURL(`tel:${customer.phone}`);
+    }
   };
 
   const handleEmailPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    console.log('Email customer:', customer.email);
+    if (customer.email) {
+      Linking.openURL(`mailto:${customer.email}`);
+    }
   };
 
-  const handleViewLocationPress = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log('View location');
+  const handleGetDirections = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    if (!customer.address) {
+      Alert.alert('No Address', 'This customer does not have an address saved.');
+      return;
+    }
+
+  //open maps app
+    const url = `maps://maps.apple.com/?daddr=${encodeURIComponent(customer.address)}`;
+    
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      Linking.openURL(url);
+    } else {
+      Alert.alert('Error', 'Cannot open Maps app');
+    }
+  };
+
+  const handleJobPress = async (job) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: '/jobdetails',
+      params: {
+        jobId: job.id,
+        jobTitle: job.title,
+        jobDescription: job.description,
+        jobCustomerName: job.customerName,
+        jobCustomerId: job.customerId,
+        jobStatus: job.status,
+        jobPriority: job.priority,
+        jobScheduledDate: job.scheduledDate,
+        jobDueDate: job.dueDate,
+        jobLocationAddress: job.location.address,
+        jobNotes: job.notes,
+      }
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'scheduled': return { bg: '#e3f2fd', text: '#1976d2' };
+      case 'in-progress': return { bg: '#fff3e0', text: '#f57c00' };
+      case 'completed': return { bg: '#e8f5e9', text: '#388e3c' };
+      default: return { bg: '#f0f0f0', text: '#6c757d' };
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'scheduled': return t('status.scheduled');
+      case 'in-progress': return t('status.inProgress');
+      case 'completed': return t('status.completed');
+      default: return status;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
   };
 
   return (
@@ -62,6 +152,32 @@ export default function CustomerDetails() {
             <Text style={styles.customerType}>{t('customerDetails.commercial')}</Text>
           </View>
 
+          {/* map section */}
+          {customer.address && (
+            <View style={styles.mapSection}>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_DEFAULT}
+                initialRegion={{
+                  ...coordinates,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+              >
+                <Marker
+                  coordinate={coordinates}
+                  title={customer.name}
+                  description={customer.address}
+                />
+              </MapView>
+              
+              <Pressable style={styles.directionsButton} onPress={handleGetDirections}>
+                <Ionicons name="navigate" size={20} color="white" />
+                <Text style={styles.directionsButtonText}>{t('customerDetails.getDirections')}</Text>
+              </Pressable>
+            </View>
+          )}
+
           {/* contact info */}
           <View style={styles.infoSection}>
             <Pressable style={styles.infoRow} onPress={handleEmailPress}>
@@ -84,17 +200,17 @@ export default function CustomerDetails() {
               </View>
             </Pressable>
 
-            <Pressable style={styles.infoRow} onPress={handleViewLocationPress}>
-              <View style={styles.infoIcon}>
-                <Ionicons name="location" size={20} color="#007AFF" />
+            {customer.address && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="location" size={20} color="#007AFF" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>{t('customerDetails.address')}</Text>
+                  <Text style={styles.infoValue}>{customer.address}</Text>
+                </View>
               </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>{t('customerDetails.address')}</Text>
-                <Pressable onPress={handleViewLocationPress}>
-                  <Text style={styles.linkText}>{t('customerDetails.viewLocation')}</Text>
-                </Pressable>
-              </View>
-            </Pressable>
+            )}
 
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
@@ -112,10 +228,46 @@ export default function CustomerDetails() {
               </View>
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>{t('customerDetails.activeJobs')}</Text>
-                <Text style={styles.infoValue}>{customer.jobs} {t('customers.jobs')}</Text>
+                <Text style={styles.infoValue}>{customerJobs.length} jobs</Text>
               </View>
             </View>
           </View>
+
+          {/* jobs section */}
+          {customerJobs.length > 0 && (
+            <View style={styles.jobsSection}>
+              <Text style={styles.sectionTitle}>{t('customerDetails.jobsForCustomer')}</Text>
+              {customerJobs.map((job) => {
+                const statusColors = getStatusColor(job.status);
+                return (
+                  <Pressable 
+                    key={job.id} 
+                    style={styles.jobCard}
+                    onPress={() => handleJobPress(job)}
+                  >
+                    <View style={styles.jobHeader}>
+                      <Text style={styles.jobTitle}>{job.title}</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}>
+                        <Text style={[styles.statusText, { color: statusColors.text }]}>
+                          {getStatusLabel(job.status)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.jobDetails}>
+                      <View style={styles.jobDetailRow}>
+                        <Ionicons name="calendar-outline" size={14} color="#6c757d" />
+                        <Text style={styles.jobDetailText}>{formatDate(job.scheduledDate)}</Text>
+                      </View>
+                      <View style={styles.jobDetailRow}>
+                        <Ionicons name="location-outline" size={14} color="#6c757d" />
+                        <Text style={styles.jobDetailText}>{job.location.address}</Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         </ScrollView>
       </View>
     </>
@@ -175,6 +327,33 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
+  mapSection: {
+    margin: 15,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  map: {
+    width: '100%',
+    height: 200,
+  },
+  directionsButton: {
+    flexDirection: 'row',
+    backgroundColor: '#007AFF',
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  directionsButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   infoSection: {
     backgroundColor: 'white',
     margin: 15,
@@ -215,9 +394,59 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     fontWeight: '500',
   },
-  linkText: {
+  jobsSection: {
+    marginHorizontal: 15,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 15,
+  },
+  jobCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  jobHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  jobTitle: {
     fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
+    marginRight: 10,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  jobDetails: {
+    gap: 5,
+  },
+  jobDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  jobDetailText: {
+    fontSize: 14,
+    color: '#6c757d',
   },
 });

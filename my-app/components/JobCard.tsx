@@ -57,9 +57,9 @@ export const JobCard = ({ job, onPress }: JobCardProps) => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'scheduled': return t('jobs.scheduled');
-      case 'in-progress': return t('jobs.inProgress');
-      case 'completed': return t('jobs.completed');
+      case 'scheduled': return t('status.scheduled');
+      case 'in-progress': return t('status.inProgress');
+      case 'completed': return t('status.completed');
       default: return status;
     }
   };
@@ -75,9 +75,9 @@ export const JobCard = ({ job, onPress }: JobCardProps) => {
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'high': return t('jobs.highPriority');
-      case 'medium': return t('jobs.mediumPriority');
-      case 'low': return t('jobs.lowPriority');
+      case 'high': return t('priority.high');
+      case 'medium': return t('priority.medium');
+      case 'low': return t('priority.low');
       default: return priority;
     }
   };
@@ -93,10 +93,10 @@ export const JobCard = ({ job, onPress }: JobCardProps) => {
     const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
-    if (diffDays === 0) return 'Due today';
-    if (diffDays === 1) return '1 day left';
-    return `${diffDays} days left`;
+    if (diffDays < 0) return `${Math.abs(diffDays)} ${t('jobCard.daysOverdue')}`;
+    if (diffDays === 0) return t('jobCard.dueToday');
+    if (diffDays === 1) return `1 ${t('jobCard.dayLeft')}`;
+    return `${diffDays} ${t('jobCard.daysLeft')}`;
   };
 
   const statusColors = getStatusColor(job.status);
@@ -125,7 +125,7 @@ export const JobCard = ({ job, onPress }: JobCardProps) => {
           <View style={styles.jobInfoRow}>
             <Ionicons name="calendar" size={14} color="#6c757d" />
             <Text style={styles.jobInfoText}>
-              {job.status === 'completed' ? 'Completed' : 'Due'}: {formatDate(job.dueDate)}
+              {job.status === 'completed' ? t('jobCard.completed') : t('jobCard.due')}: {formatDate(job.dueDate)}
             </Text>
           </View>
           <View style={styles.jobInfoRow}>
@@ -139,7 +139,7 @@ export const JobCard = ({ job, onPress }: JobCardProps) => {
             {getPriorityLabel(job.priority)}
           </Text>
           <Text style={styles.daysText}>
-            {job.status === 'completed' ? '✓ Completed' : getDaysUntil(job.dueDate)}
+            {job.status === 'completed' ? `✓ ${t('jobCard.completed')}` : getDaysUntil(job.dueDate)}
           </Text>
         </View>
       </Animated.View>

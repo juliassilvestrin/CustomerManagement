@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useJobs } from '../app/hooks/useJobs';
 
 interface CustomerCardProps {
   customer: {
@@ -8,19 +9,25 @@ interface CustomerCardProps {
     name: string;
     email: string;
     phone: string;
-    jobs: number;
+    jobs?: number; // make optional since we'll calculate it
   };
   onPress: () => void;
 }
 
 export const CustomerCard = ({ customer, onPress }: CustomerCardProps) => {
   const { t } = useLanguage();
+  const { jobs } = useJobs();
+
+  // calculate actual job count for this customer
+  const customerJobCount = jobs.filter(job => job.customerId === customer.id).length;
 
   return (
     <Pressable style={styles.customerCard} onPress={onPress}>
       <View style={styles.customerHeader}>
         <Text style={styles.customerName}>{customer.name}</Text>
-        <Text style={styles.jobCount}>{customer.jobs} {t('customers.jobs')}</Text>
+        <Text style={styles.jobCount}>
+          {customerJobCount} {t('customers.jobs')}
+        </Text>
       </View>
       <Text style={styles.customerInfo}>{customer.email}</Text>
       <Text style={styles.customerInfo}>{customer.phone}</Text>
