@@ -40,6 +40,7 @@ export default function Customers() {
         customerName: customer.name,
         customerEmail: customer.email,
         customerPhone: customer.phone,
+        customerAddress: customer.address,  
         customerJobs: customer.jobs,
         customerContactPerson: customer.contactPerson,
       }

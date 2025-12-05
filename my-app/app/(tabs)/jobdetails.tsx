@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useJobs } from '../hooks/useJobs';
+import { MapCard } from '../../components/MapCard';
 
 export default function JobDetails() {
   const params = useLocalSearchParams();
@@ -26,13 +27,13 @@ export default function JobDetails() {
 
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(tabs)/jobs');
+    router.push('/(tabs)/jobs');  
   };
 
   const handleEditPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
-      pathname: '/editjob',
+      pathname: '/(tabs)/editjob',  
       params: {
         jobId: job.id,
         jobTitle: job.title,
@@ -67,7 +68,7 @@ export default function JobDetails() {
             const success = await deleteJob(job.id);
             
             if (success) {
-              router.push('/(tabs)/jobs');
+              router.push('/(tabs)/jobs');  
             } else {
               Alert.alert('Error', 'Failed to delete job');
             }
@@ -209,15 +210,26 @@ export default function JobDetails() {
             </View>
 
             {/* location */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoIcon}>
-                <Ionicons name="location" size={20} color="#007AFF" />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Location</Text>
-                <Text style={styles.infoValue}>{job.locationAddress}</Text>
-              </View>
-            </View>
+            {job.locationAddress && (
+              <>
+                <View style={[styles.infoRow, styles.infoRowNoBorder]}>
+                  <View style={styles.infoIcon}>
+                    <Ionicons name="location" size={20} color="#007AFF" />
+                  </View>
+                  <View style={styles.infoContent}>
+                    <Text style={styles.infoLabel}>Location</Text>
+                    <Text style={styles.infoValue}>{job.locationAddress}</Text>
+                  </View>
+                </View>
+
+                {/* MAP COMPONENT */}
+                <MapCard 
+                  address={job.locationAddress}
+                  title={job.title}
+                  buttonText="Get Directions"
+                />
+              </>
+            )}
 
             {/* description */}
             {job.description ? (
@@ -332,6 +344,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
+  infoRowNoBorder: {
+    borderBottomWidth: 0,
+  },
   infoIcon: {
     width: 40,
     height: 40,
@@ -359,17 +374,19 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: '500',
   },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#dc3545',
-    marginHorizontal: 15,
-    marginVertical: 20,
-    padding: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
+deleteButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#FF3B30',  
+  marginHorizontal: 15,
+  marginVertical: 20,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  minHeight: 44,  
+  borderRadius: 12,
+  gap: 8,
+},
   deleteButtonText: {
     color: 'white',
     fontSize: 16,

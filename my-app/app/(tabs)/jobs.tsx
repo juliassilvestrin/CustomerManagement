@@ -26,13 +26,13 @@ export default function Jobs() {
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/addjob');
+    router.push('/(tabs)/addjob');  
   };
 
   const handleJobPress = async (job) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
-      pathname: '/jobdetails',
+      pathname: '/(tabs)/jobdetails',  
       params: {
         jobId: job.id,
         jobTitle: job.title,

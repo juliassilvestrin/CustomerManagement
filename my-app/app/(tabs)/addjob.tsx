@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert, Platform, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert, Platform, Modal, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useJobs } from '../hooks/useJobs';
@@ -11,6 +11,7 @@ import { useCustomers } from '../hooks/useCustomer';
 export default function AddJob() {
   const { addJob } = useJobs();
   const { customers, loadCustomers } = useCustomers();
+  const scrollViewRef = useRef(null);
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -34,10 +35,18 @@ export default function AddJob() {
     loadCustomers();
   }, []);
 
+  // reset scroll position when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
+
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Keyboard.dismiss();
     clearForm();
-    router.back();
+    router.push('/(tabs)/jobs');
   };
 
   const clearForm = () => {
@@ -55,6 +64,7 @@ export default function AddJob() {
 
   const handleSave = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Keyboard.dismiss();
 
     // validation
     if (!title.trim()) {
@@ -142,7 +152,11 @@ export default function AddJob() {
   return (
     <>
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
         {/* nav bar */}
         <View style={styles.navbar}>
           <Pressable onPress={handleBackPress}>
@@ -152,7 +166,14 @@ export default function AddJob() {
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={styles.scrollContent}
+        >
           <View style={styles.form}>
             {/* job title */}
             <View style={styles.inputGroup}>
@@ -162,6 +183,7 @@ export default function AddJob() {
                 placeholder="Enter job title"
                 value={title}
                 onChangeText={setTitle}
+                returnKeyType="next"
               />
             </View>
 
@@ -265,6 +287,7 @@ export default function AddJob() {
                 placeholder="Enter job address"
                 value={address}
                 onChangeText={setAddress}
+                returnKeyType="next"
               />
             </View>
 
@@ -279,6 +302,14 @@ export default function AddJob() {
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
+                onFocus={() => {
+                  
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollTo({ y: 1000, animated: true });
+                  }, 100);
+                }}
               />
             </View>
 
@@ -442,7 +473,7 @@ export default function AddJob() {
             </View>
           </View>
         </Modal>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
 }
@@ -472,8 +503,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   form: {
     padding: 20,
+    paddingBottom: 300,
   },
   inputGroup: {
     marginBottom: 20,
@@ -493,7 +528,7 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 80,
     paddingTop: 15,
   },
   dropdownButton: {
@@ -530,10 +565,14 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#007AFF',
     borderRadius: 12,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    minHeight: 44, 
     alignItems: 'center',
+    justifyContent: 'center', 
     marginTop: 20,
-  },
+    marginBottom: 20,
+},
   saveButtonText: {
     color: 'white',
     fontSize: 16,

@@ -9,7 +9,7 @@ interface CustomerCardProps {
     name: string;
     email: string;
     phone: string;
-    jobs?: number; // make optional since we'll calculate it
+    jobs?: number;
   };
   onPress: () => void;
 }

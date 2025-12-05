@@ -19,7 +19,7 @@ export default function AddReport() {
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     clearForm();
-    router.back();
+    router.push('/(tabs)/reports');  // ✅ CHANGED: Go to Reports tab
   };
 
   const clearForm = () => {

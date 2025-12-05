@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    minHeight: 44, // HIG: minimum touch target
+    minHeight: 44,
   },
   searchIcon: {
     marginRight: 10,

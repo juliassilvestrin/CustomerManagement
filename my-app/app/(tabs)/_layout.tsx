@@ -1,61 +1,101 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LanguageProvider } from '../../contexts/LanguageContext';
+import * as Haptics from 'expo-haptics';
+import { Pressable, View, Text, StyleSheet } from 'react-native';
+import { LanguageProvider, useLanguage } from '../../contexts/LanguageContext';
+
+function CustomTabBar({ state, descriptors, navigation }) {
+  const { t } = useLanguage();
+  
+  return (
+    <View style={styles.tabBar}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+
+        const onPress = async () => {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+   
+        if (index > 3) return null;
+
+        const iconName = index === 0 ? 'home' : 
+                        index === 1 ? 'people-outline' :
+                        index === 2 ? 'briefcase-outline' :
+                        'bar-chart-outline';
+
+   
+        const label = index === 0 ? t('dashboard.title') :
+                     index === 1 ? t('customers.title') :
+                     index === 2 ? t('jobs.title') :
+                     t('reports.title');
+
+        return (
+          <Pressable
+            key={route.key}
+            onPress={onPress}
+            style={styles.tab}
+          >
+            <Ionicons
+              name={iconName}
+              size={24}
+              color={isFocused ? '#007AFF' : '#8E8E93'}
+            />
+            <Text style={[
+              styles.label,
+              { color: isFocused ? '#007AFF' : '#8E8E93' }
+            ]}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function RootLayout() {
   return (
     <LanguageProvider>
       <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          tabBarStyle: {
-            backgroundColor: 'white',
-            borderTopWidth: 1,
-            borderTopColor: '#e9ecef',
-            height: 60,
-          },
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#8E8E93',
-          tabBarLabelStyle: {
-            fontSize: 10,
-            fontWeight: '500',
-          },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: 'Dashboard',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home" size={size} color={color} />
-            ),
           }}
         />
         <Tabs.Screen
           name="customers"
           options={{
             title: 'Customers',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="people-outline" size={size} color={color} />
-            ),
           }}
         />
         <Tabs.Screen
           name="jobs"
           options={{
             title: 'Jobs',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="briefcase-outline" size={size} color={color} />
-            ),
           }}
         />
         <Tabs.Screen
           name="reports"
           options={{
             title: 'Reports',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="bar-chart-outline" size={size} color={color} />
-            ),
           }}
         />
         
@@ -72,3 +112,24 @@ export default function RootLayout() {
     </LanguageProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    height: 60,
+  },
+  tab: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  label: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+});

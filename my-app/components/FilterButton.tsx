@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     borderWidth: 1,
     borderColor: '#e9ecef',
-    minHeight: 36, // Close to 44pt with surrounding spacing
+    minHeight: 36, 
   },
   buttonActive: {
     backgroundColor: '#007AFF',

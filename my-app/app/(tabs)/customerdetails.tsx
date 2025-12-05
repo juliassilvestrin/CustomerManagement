@@ -4,9 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useJobs } from '../hooks/useJobs';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { MapCard } from '../../components/MapCard';
 
 export default function CustomerDetails() {
   const { t } = useLanguage();
@@ -25,27 +25,9 @@ export default function CustomerDetails() {
   // get all jobs for this customer
   const customerJobs = jobs.filter(job => job.customerId === parseInt(customer.id));
 
-//geocode stuff 
-  const getCoordinates = (address) => {
-    if (!address) {
-      return {
-        latitude: 37.6775,
-        longitude: -113.0619,
-      };
-    }
-    
-  
-    return {
-      latitude: 37.6775,
-      longitude: -113.0619,
-    };
-  };
-
-  const coordinates = getCoordinates(customer.address);
-
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.back();
+    router.push('/(tabs)/customers');  
   };
 
   const handleCallPress = async () => {
@@ -62,29 +44,10 @@ export default function CustomerDetails() {
     }
   };
 
-  const handleGetDirections = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
-    if (!customer.address) {
-      Alert.alert('No Address', 'This customer does not have an address saved.');
-      return;
-    }
-
-  //open maps app
-    const url = `maps://maps.apple.com/?daddr=${encodeURIComponent(customer.address)}`;
-    
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'Cannot open Maps app');
-    }
-  };
-
   const handleJobPress = async (job) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
-      pathname: '/jobdetails',
+      pathname: '/(tabs)/jobdetails',  
       params: {
         jobId: job.id,
         jobTitle: job.title,
@@ -152,32 +115,6 @@ export default function CustomerDetails() {
             <Text style={styles.customerType}>{t('customerDetails.commercial')}</Text>
           </View>
 
-          {/* map section */}
-          {customer.address && (
-            <View style={styles.mapSection}>
-              <MapView
-                style={styles.map}
-                provider={PROVIDER_DEFAULT}
-                initialRegion={{
-                  ...coordinates,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-              >
-                <Marker
-                  coordinate={coordinates}
-                  title={customer.name}
-                  description={customer.address}
-                />
-              </MapView>
-              
-              <Pressable style={styles.directionsButton} onPress={handleGetDirections}>
-                <Ionicons name="navigate" size={20} color="white" />
-                <Text style={styles.directionsButtonText}>{t('customerDetails.getDirections')}</Text>
-              </Pressable>
-            </View>
-          )}
-
           {/* contact info */}
           <View style={styles.infoSection}>
             <Pressable style={styles.infoRow} onPress={handleEmailPress}>
@@ -201,15 +138,24 @@ export default function CustomerDetails() {
             </Pressable>
 
             {customer.address && (
-              <View style={styles.infoRow}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="location" size={20} color="#007AFF" />
+              <>
+                <View style={[styles.infoRow, styles.infoRowNoBorder]}>
+                  <View style={styles.infoIcon}>
+                    <Ionicons name="location" size={20} color="#007AFF" />
+                  </View>
+                  <View style={styles.infoContent}>
+                    <Text style={styles.infoLabel}>{t('customerDetails.address')}</Text>
+                    <Text style={styles.infoValue}>{customer.address}</Text>
+                  </View>
                 </View>
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>{t('customerDetails.address')}</Text>
-                  <Text style={styles.infoValue}>{customer.address}</Text>
-                </View>
-              </View>
+                
+                {/* MAP COMPONENT */}
+                <MapCard 
+                  address={customer.address}
+                  title={customer.name}
+                  buttonText={t('customerDetails.getDirections')}
+                />
+              </>
             )}
 
             <View style={styles.infoRow}>
@@ -327,33 +273,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
-  mapSection: {
-    margin: 15,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  map: {
-    width: '100%',
-    height: 200,
-  },
-  directionsButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF',
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  directionsButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   infoSection: {
     backgroundColor: 'white',
     margin: 15,
@@ -371,6 +290,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  infoRowNoBorder: {
+    borderBottomWidth: 0,
   },
   infoIcon: {
     width: 40,

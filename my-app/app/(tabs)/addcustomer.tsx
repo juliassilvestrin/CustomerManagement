@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -10,6 +10,7 @@ import { useCustomers } from '../hooks/useCustomer';
 export default function AddCustomer() {
   const { t } = useLanguage();
   const { addCustomer } = useCustomers();
+  const scrollViewRef = useRef(null);
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,8 +20,9 @@ export default function AddCustomer() {
 
   const handleBackPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Keyboard.dismiss();
     clearForm();
-    router.back();
+    router.push('/(tabs)/customers');  
   };
 
   const clearForm = () => {
@@ -33,6 +35,7 @@ export default function AddCustomer() {
 
   const handleSave = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Keyboard.dismiss();
 
     // create new customer object
     const newCustomer = {
@@ -44,9 +47,12 @@ export default function AddCustomer() {
       jobs: 0,
     };
 
+    console.log('Saving customer:', newCustomer);
+
     const savedCustomer = await addCustomer(newCustomer);
     
     if (savedCustomer) {
+      console.log('Customer saved:', savedCustomer);
       clearForm();
       router.push('/(tabs)/customers');
     } else {
@@ -57,7 +63,11 @@ export default function AddCustomer() {
   return (
     <>
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
         {/* nav bar */}
         <View style={styles.navbar}>
           <Pressable onPress={handleBackPress}>
@@ -67,7 +77,14 @@ export default function AddCustomer() {
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={styles.scrollContent}
+        >
           <View style={styles.form}>
             {/* customer name */}
             <View style={styles.inputGroup}>
@@ -77,6 +94,7 @@ export default function AddCustomer() {
                 placeholder={t('addCustomer.name')}
                 value={name}
                 onChangeText={setName}
+                returnKeyType="next"
               />
             </View>
 
@@ -90,6 +108,7 @@ export default function AddCustomer() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                returnKeyType="next"
               />
             </View>
 
@@ -102,6 +121,7 @@ export default function AddCustomer() {
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
+                returnKeyType="next"
               />
             </View>
 
@@ -109,12 +129,14 @@ export default function AddCustomer() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('addCustomer.address')}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.textArea]}
                 placeholder={t('addCustomer.address')}
                 value={address}
                 onChangeText={setAddress}
                 multiline
                 numberOfLines={3}
+                textAlignVertical="top"
+                returnKeyType="next"
               />
             </View>
 
@@ -126,6 +148,8 @@ export default function AddCustomer() {
                 placeholder={t('addCustomer.contactPerson')}
                 value={contactPerson}
                 onChangeText={setContactPerson}
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
               />
             </View>
 
@@ -135,7 +159,7 @@ export default function AddCustomer() {
             </Pressable>
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
 }
@@ -165,8 +189,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   form: {
     padding: 20,
+    paddingBottom: 100,
   },
   inputGroup: {
     marginBottom: 20,
@@ -185,13 +213,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
-  saveButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 20,
+  textArea: {
+    minHeight: 80,
+    paddingTop: 15,
   },
+ saveButton: {
+  backgroundColor: '#007AFF',
+  borderRadius: 12,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  minHeight: 44,
+  alignItems: 'center',
+  justifyContent: 'center',  
+  marginTop: 20,
+  marginBottom: 20,
+},
   saveButtonText: {
     color: 'white',
     fontSize: 16,
